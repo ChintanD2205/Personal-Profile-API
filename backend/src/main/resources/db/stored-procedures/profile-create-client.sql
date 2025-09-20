@@ -5,7 +5,7 @@ CREATE OR ALTER PROCEDURE profile_create_client
 	@Email		VARCHAR(250),
 	@FirstName	VARCHAR(250),
 	@LastName	VARCHAR(250),
-	@Status		BIT	
+	@Status		BIT=1
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -20,7 +20,7 @@ BEGIN
 
     PRINT 'Client inserted successfully.';
 
-    SELECT SCOPE_IDENTITY() AS NewUserId;
+    SELECT CAST(SCOPE_IDENTITY() AS INT) AS NewUserId;
 
 END;
 GO

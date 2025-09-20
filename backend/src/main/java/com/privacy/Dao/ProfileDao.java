@@ -1,5 +1,7 @@
 package com.privacy.Dao;
+import com.privacy.Model.Entity.Client;
 
-public class ProfileDao {
+public interface ProfileDao {
+	Client save(Client client);
 
 }

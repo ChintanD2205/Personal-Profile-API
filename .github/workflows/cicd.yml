@@ -1,0 +1,37 @@
+name: CICD
+
+on: 
+  push:
+    branches: [origin/deploy-ec2]
+
+jobs:
+  build:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Build Project
+        run: mvn clean install
+      - name: Login to DockerHub
+        run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
+      - name: Build Docker Image
+        run: docker build -t chintand2205/personal-profile-api
+      - name: Publish image to DockerHub
+        run: docker push chintand2205/personal-profile-api:latest
+
+  deploy:
+    needs: build
+    runs-on: [aws-ec2]
+    steps:
+      - name: Pull Image from DockerHub
+        run: docker pull chintand2205/personal-profile-api:latest
+      - name: Delete old container
+        run: docker rm -f personal-profile-api-container
+      - name: Run it as container
+        run: docker run -d -p 8080:8080 --name personal-profile-api-container chintand2205/personal-profile-api
+
