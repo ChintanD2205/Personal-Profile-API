@@ -30,9 +30,9 @@ jobs:
     runs-on: [aws-ec2]
     steps:
       - name: Pull Image from DockerHub
-        run: docker pull chintand2205/personal-profile-api:latest
+        run: sudo docker pull chintand2205/personal-profile-api:latest
       - name: Delete old container
-        run: docker rm -f personal-profile-api-container
+        run: sudo docker rm -f personal-profile-api-container
       - name: Run it as container
-        run: docker run -d -p 8080:8080 --name personal-profile-api-container chintand2205/personal-profile-api
+        run: sudo docker run -d -p 8080:8080 --name personal-profile-api-container chintand2205/personal-profile-api
 
