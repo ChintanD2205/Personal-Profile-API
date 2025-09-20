@@ -16,11 +16,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Build Project
+        working-directory: ./backend
         run: mvn clean install
       - name: Login to DockerHub
         run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
       - name: Build Docker Image
-        run: docker build -t chintand2205/personal-profile-api
+        run: docker build -t chintand2205/personal-profile-api .
       - name: Publish image to DockerHub
         run: docker push chintand2205/personal-profile-api:latest
 
