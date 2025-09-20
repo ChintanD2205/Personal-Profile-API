@@ -27,6 +27,7 @@ public class ProfileBllImpl implements ProfileBLL{
 		
 		Client client = convertToEntity(clientDTO);
 		client = profileDao.save(client);
+		System.out.println("Hello");
 		return convertToDTO(client);
 	}
 
