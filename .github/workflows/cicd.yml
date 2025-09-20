@@ -33,7 +33,5 @@ jobs:
         uses: actions/checkout@v3
       - name: Pull Image from DockerHub
         run: sudo docker pull chintand2205/personal-profile-api:${{ github.sha }}
-      - name: Stop existing services
-        run: sudo docker-compose down || true
-      - name: Start services with docker-compose
-        run: sudo IMAGE_TAG=${{ github.sha }} docker-compose up -d
+      - name: Deploy with docker-compose (force recreate)
+        run: sudo IMAGE_TAG=${{ github.sha }} docker-compose up -d --force-recreate --remove-orphans
