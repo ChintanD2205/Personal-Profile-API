@@ -2,7 +2,7 @@ name: CICD
 
 on: 
   push:
-    branches: [origin/deploy-ec2]
+    branches: [deploy-ec2]
 
 jobs:
   build:
@@ -16,11 +16,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Build Project
+        working-directory: ./backend
         run: mvn clean install
       - name: Login to DockerHub
         run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
       - name: Build Docker Image
-        run: docker build -t chintand2205/personal-profile-api
+        run: docker build -t chintand2205/personal-profile-api .
       - name: Publish image to DockerHub
         run: docker push chintand2205/personal-profile-api:latest
 
@@ -29,9 +30,9 @@ jobs:
     runs-on: [aws-ec2]
     steps:
       - name: Pull Image from DockerHub
-        run: docker pull chintand2205/personal-profile-api:latest
+        run: sudo docker pull chintand2205/personal-profile-api:latest
       - name: Delete old container
-        run: docker rm -f personal-profile-api-container
+        run: sudo docker rm -f personal-profile-api-container
       - name: Run it as container
-        run: docker run -d -p 8080:8080 --name personal-profile-api-container chintand2205/personal-profile-api
+        run: sudo docker run -d -p 8080:8080 --name personal-profile-api-container chintand2205/personal-profile-api
 
