@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: personal-profile-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=sbs-app
+      - MSSQL_DB=PersonalProfileAPI
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - app-network
+
+  app:
+    image: chintand2205/personal-profile-api:${IMAGE_TAG:-latest}
+    container_name: personal-profile-api-container
+    depends_on:
+      - sqlserver
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - app-network
+
+volumes:
+  sqlserver_data:
+
+networks:
+  app-network:
+    driver: bridge
