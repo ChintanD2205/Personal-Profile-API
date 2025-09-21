@@ -50,22 +50,49 @@ public class ProfileDaoImpl implements ProfileDao{
 
 	
 	public Client login(String email, String password) {
-		
-		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
-				.withProcedureName("sp_login_client")
-				.returningResultSet("resultSet", loginMapper);
-		
-		SqlParameterSource params = new MapSqlParameterSource()
-				.addValue("Email", email)
-				.addValue("Password", password);
-		
-		Map<String, Object> resMap = jdbcCall.execute(params);
-		List<Client> clients = (List<Client>) resMap.get("resultSet");
-		
-		if (clients == null || clients.isEmpty()) {
-	        return null;
+	    System.out.println(">>> DAO LOGIN START - Email: " + email + " Password: " + password);
+	    
+	    try {
+	        // Debug: Fetch all clients first to check DB connectivity
+	        System.out.println(">>> DAO - Testing database connection by fetching all clients");
+	        String debugSql = "SELECT TOP 10 Username, Email, FirstName, LastName FROM CLIENTS";
+	        List<Map<String, Object>> allClients = jdbcTemplate.queryForList(debugSql);
+	        System.out.println(">>> DAO - Total clients found: " + allClients.size());
+	        
+	        for (Map<String, Object> client : allClients) {
+	            System.out.println(">>> DAO - Client: " + client.get("Username") + " | " + client.get("Email"));
+	        }
+	        
+	        System.out.println(">>> DAO - About to call sp_login_client");
+	        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+	            .withProcedureName("sp_login_client")
+	            .returningResultSet("resultSet", loginMapper);
+
+	        SqlParameterSource params = new MapSqlParameterSource()
+	            .addValue("Email", email)
+	            .addValue("Password", password);
+
+	        System.out.println(">>> DAO - Executing stored procedure");
+	        Map<String, Object> resMap = jdbcCall.execute(params);
+	        System.out.println(">>> DAO - SP result: " + resMap);
+	        
+	        List<Client> clients = (List<Client>) resMap.get("resultSet");
+	        System.out.println(">>> DAO - Clients from SP: " + (clients != null ? clients.size() : "NULL"));
+
+	        if (clients == null || clients.isEmpty()) {
+	            System.out.println(">>> DAO - No clients found, returning null");
+	            return null;
+	        }
+	        
+	        Client foundClient = clients.get(0);
+	        System.out.println(">>> DAO - Found client: " + foundClient.getUsername() + " ID: " + foundClient.getUserID());
+	        return foundClient;
+	        
+	    } catch (Exception e) {
+	        System.out.println(">>> DAO - Exception in login: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+	        e.printStackTrace();
+	        throw e;
 	    }
-		return clients.get(0);
 	}
 	
 	@Override
