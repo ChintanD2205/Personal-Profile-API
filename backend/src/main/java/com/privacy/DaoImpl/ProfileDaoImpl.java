@@ -63,7 +63,7 @@ public class ProfileDaoImpl implements ProfileDao{
 		List<Client> clients = (List<Client>) resMap.get("resultSet");
 		
 		if (clients == null || clients.isEmpty()) {
-	        return new Client();
+	        return null;
 	    }
 		return clients.get(0);
 	}
