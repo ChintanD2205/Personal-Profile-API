@@ -7,5 +7,3 @@ BEGIN
 	SELECT UserID, FirstName, LastName, Username from CLIENTS WHERE Email=@Email AND Password=@Password;
 END;
 GO
-
-SELECT * FROM ROLES;

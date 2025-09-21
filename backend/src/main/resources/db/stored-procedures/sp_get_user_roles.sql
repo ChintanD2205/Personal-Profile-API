@@ -9,7 +9,6 @@ BEGIN
     JOIN USER_ROLE_ASSIGNMENTS ur ON r.RoleID = ur.RoleID
     WHERE ur.EmployeeID = @UserId;
 
-    -- If no rows found, return default role
     IF @@ROWCOUNT = 0
     BEGIN
         SELECT 'CLIENT' AS roleName;
