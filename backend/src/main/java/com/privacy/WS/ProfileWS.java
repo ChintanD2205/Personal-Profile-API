@@ -3,6 +3,7 @@ package com.privacy.WS;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,13 +24,22 @@ public class ProfileWS {
 	private ProfileBLL profileBLL;
 	
 	@PostMapping("/create-client")
+	@PreAuthorize("hasRole('CLIENT')")
 	public void createUser(@RequestBody ClientDTO clientDTO)
 	{
 		System.out.println(clientDTO.toString());
 		ClientDTO client = profileBLL.createClient(clientDTO);
 	}
 	
+	@PostMapping("/hello")
+	@PreAuthorize("hasRole('CLIENT')")
+	public String returnHello()
+	{
+		return "Hello WOrld";
+	}
+	
 	@GetMapping("/token")
+	@PreAuthorize("hasRole('CLIENT')")
     public Map<String, String> csrf(HttpServletRequest request) {
         CsrfToken token = (CsrfToken) request.getAttribute("_csrf");
         return Map.of(
