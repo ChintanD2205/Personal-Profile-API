@@ -10,18 +10,23 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
+
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
+
       - name: Build Project
         working-directory: ./backend
         run: mvn clean install
+
       - name: Login to DockerHub
         run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
+
       - name: Build Docker Image
         run: docker build -t chintand2205/personal-profile-api:${{ github.sha }} .
+
       - name: Publish image to DockerHub
         run: docker push chintand2205/personal-profile-api:${{ github.sha }}
 
@@ -31,7 +36,23 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
+
       - name: Pull Image from DockerHub
         run: sudo docker pull chintand2205/personal-profile-api:${{ github.sha }}
-      - name: Deploy with docker-compose (force recreate)
-        run: sudo IMAGE_TAG=${{ github.sha }} docker-compose up -d --force-recreate --remove-orphans
+
+      - name: Clean up any existing containers with same names
+        run: |
+          sudo docker rm -f personal-profile-api-container || true
+
+      - name: Deploy with docker-compose
+        run: |
+          export DATABASE_URL="jdbc:sqlserver://94.130.170.22:1433;databaseName=PersonalProfileAPI;encrypt=true;trustServerCertificate=true;"
+          export DATABASE_USERNAME="${{ secrets.DATABASE_USERNAME }}"
+          export DATABASE_PASSWORD="${{ secrets.DATABASE_PASSWORD }}"
+          sudo -E IMAGE_TAG=${{ github.sha }} docker-compose up -d --force-recreate --remove-orphans
+          
+      - name: Verify deployment
+        run: |
+          echo "Waiting for application to start..."
+          sleep 30
+          curl -f http://localhost:8080/actuator/health || echo "Health check endpoint not available"
