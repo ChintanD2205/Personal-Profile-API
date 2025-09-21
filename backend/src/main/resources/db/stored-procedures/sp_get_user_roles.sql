@@ -15,6 +15,9 @@ BEGIN
     BEGIN
         SELECT 'CLIENT' AS RoleName;
     END
-END
+END;
+GO
 
+SELECT * FROM CLIENTS;
+SELECT * FROM USER_ROLE_ASSIGNMENTS;
 EXEC sp_get_user_roles @UserId=1;

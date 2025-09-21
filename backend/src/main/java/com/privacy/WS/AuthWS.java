@@ -30,6 +30,7 @@ public class AuthWS {
     @PostMapping("/login")
     public ResponseEntity<HashMap<String, String>> login(@RequestBody LoginRequestDTO request) {
         try {
+        	System.out.println("In login"+ request.getEmail() + request.getPassword());
         	
             if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required");
@@ -41,7 +42,7 @@ public class AuthWS {
 
             Client client = authBLL.login(request.getEmail(), request.getPassword());
 
-            if (client == null || client.getUsername() == null || client.getUsername().trim().isEmpty()) {
+            if (client == null) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
             }
 
