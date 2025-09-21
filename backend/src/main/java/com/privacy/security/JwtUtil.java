@@ -23,7 +23,7 @@ public class JwtUtil {
 	{
 		return Jwts.builder()
 				.setSubject(username)
-				.claim("role", roles)
+				.claim("roles", roles)
 				.setIssuedAt(new Date())
 				.setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
 				.signWith(Keys.hmacShaKeyFor(secret.getBytes()), SignatureAlgorithm.HS256)
