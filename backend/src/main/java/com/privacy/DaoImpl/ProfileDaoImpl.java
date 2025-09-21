@@ -52,7 +52,7 @@ public class ProfileDaoImpl implements ProfileDao{
 	public Client login(String email, String password) {
 		
 		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
-				.withProcedureName("login_client")
+				.withProcedureName("sp_login_client")
 				.returningResultSet("resultSet", loginMapper);
 		
 		SqlParameterSource params = new MapSqlParameterSource()
@@ -70,16 +70,22 @@ public class ProfileDaoImpl implements ProfileDao{
 	
 	@Override
 	public List<String> getRolesByUserId(int userId) {
-	    SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
-	            .withProcedureName("get_user_roles");
+	    try {
+	        
+	        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+	            .withProcedureName("sp_get_user_roles")
+	            .returningResultSet("roles", (rs, rowNum) -> rs.getString("RoleName"));
 
-	    SqlParameterSource params = new MapSqlParameterSource()
+	        SqlParameterSource params = new MapSqlParameterSource()
 	            .addValue("UserId", userId);
 
-	    Map<String, Object> res = jdbcCall.execute(params);
-	    List<String> roles = (List<String>) res.get("resultSet"); // adjust key based on SP output
-	    return roles;
+	        Map<String, Object> res = jdbcCall.execute(params);
+	        List<String> roles = (List<String>) res.get("roles");
+	        return roles != null ? roles : List.of("CLIENT");
+	        
+	    } catch (Exception e) {
+	        return List.of("CLIENT");
+	    }
 	}
-
 
 }

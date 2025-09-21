@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,26 +20,48 @@ import com.privacy.security.JwtUtil;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthWS {
-	
-	@Autowired
-	private AuthBLL authBLL;
-	
-	@Autowired
-	JwtUtil jwtUtil;
-	
-	@PostMapping("/login")
-	public HashMap<String, String> login(@RequestBody LoginRequestDTO request)
-	{
-		Client client = authBLL.login(request.getEmail(), request.getPassword());
-		
-		if (client == null || client.getUsername() == null) {
-	        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
-	    }
-		
-		List<String> roles = authBLL.getRolesForUser(client.getUserID());
-		
-	    HashMap<String, String> response = new HashMap<>();
-	    response.put("token", jwtUtil.generateToken(client.getUsername(), roles));
-	    return response;
-	}
+
+    @Autowired
+    private AuthBLL authBLL;
+
+    @Autowired
+    JwtUtil jwtUtil;
+
+    @PostMapping("/login")
+    public ResponseEntity<HashMap<String, String>> login(@RequestBody LoginRequestDTO request) {
+        try {
+        	
+            if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required");
+            }
+            
+            if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is required");
+            }
+
+            Client client = authBLL.login(request.getEmail(), request.getPassword());
+
+            if (client == null || client.getUsername() == null || client.getUsername().trim().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
+            }
+
+
+            List<String> roles = authBLL.getRolesForUser(client.getUserID());
+
+
+            String token = jwtUtil.generateToken(client.getUsername(), roles);
+
+            HashMap<String, String> response = new HashMap<>();
+            response.put("token", token);
+            response.put("username", client.getUsername());
+
+
+            return ResponseEntity.ok(response);
+            
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Login failed due to server error");
+        }
+    }
 }
