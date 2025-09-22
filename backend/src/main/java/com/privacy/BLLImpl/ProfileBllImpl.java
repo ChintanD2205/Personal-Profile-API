@@ -60,19 +60,19 @@ public class ProfileBllImpl implements ProfileBLL{
 
 	@Override
 	public List<ConsentDTO> viewPreferences(Integer userID) {
-		return profileDao.viewPreferences(userID);
+		return profileDao.viewPreferences(userID, null);
 		
 	}
 
 	@Override
 	public List<DataAuditLogDTO> viewDataAccess(Integer userID) {
-		return profileDao.viewDataAccess(userID);
+		return profileDao.viewDataAccess(userID, null);
 		
 	}
 
 	@Override
 	public Client getProfile(Integer userID) {
-		return profileDao.getProfile(userID);
+		return profileDao.getProfile(userID, null);
 		
 	}
 

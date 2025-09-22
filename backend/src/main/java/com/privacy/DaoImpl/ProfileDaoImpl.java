@@ -162,14 +162,14 @@ public class ProfileDaoImpl implements ProfileDao{
 
 
 	@Override
-	public List<ConsentDTO> viewPreferences(Integer userID) {
+	public List<ConsentDTO> viewPreferences(Integer userID, Integer internalUID) {
 
 	    SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
 	            .withProcedureName("sp_view_preferences");
 
 	    SqlParameterSource params = new MapSqlParameterSource()
 	            .addValue("UserID", userID)
-	            .addValue("InternalUID", null);
+	            .addValue("InternalUID", internalUID);
 
 	    Map<String, Object> res = jdbcCall.execute(params);
 
@@ -189,13 +189,13 @@ public class ProfileDaoImpl implements ProfileDao{
 
 
 	@Override
-	public List<DataAuditLogDTO> viewDataAccess(Integer userID) {
+	public List<DataAuditLogDTO> viewDataAccess(Integer userID, Integer internalUID) {
 		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
 	            .withProcedureName("sp_view_data_access");
 
 	    SqlParameterSource params = new MapSqlParameterSource()
 	            .addValue("UserID", userID)
-	            .addValue("InternalUID", null);
+	            .addValue("InternalUID", internalUID);
 
 	    Map<String, Object> res = jdbcCall.execute(params);
 
@@ -214,13 +214,13 @@ public class ProfileDaoImpl implements ProfileDao{
 
 
 	@Override
-	public Client getProfile(Integer userID) {
+	public Client getProfile(Integer userID, Integer internalUID) {
 		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
 	            .withProcedureName("sp_get_client");
 
 	    SqlParameterSource params = new MapSqlParameterSource()
 	            .addValue("UserID", userID)
-	            .addValue("InternalUID", null);
+	            .addValue("InternalUID", internalUID);
 
 	    Map<String, Object> res = jdbcCall.execute(params);
 
