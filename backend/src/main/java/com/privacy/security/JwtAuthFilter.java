@@ -47,7 +47,7 @@ public class JwtAuthFilter extends OncePerRequestFilter{
 		    
 		    if (jwtUtil.validateToken(token)) {
 		    	
-		        String username = jwtUtil.extractUsername(token);
+		        String userID = jwtUtil.extractUserID(token);
 		        
 		        Claims claims = Jwts.parserBuilder()
 		        		.setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
@@ -60,7 +60,7 @@ public class JwtAuthFilter extends OncePerRequestFilter{
 		        List<SimpleGrantedAuthority> authorities = roles.stream()
 		        		.map(role -> new SimpleGrantedAuthority("ROLE_"+role))
 		        		.toList();
-		        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, null, authorities);
+		        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userID, null, authorities);
 		        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 		    }
 

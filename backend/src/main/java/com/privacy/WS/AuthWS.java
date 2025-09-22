@@ -58,7 +58,7 @@ public class AuthWS {
             System.out.println(">>> LOGIN - Roles returned: " + roles);
 
             System.out.println(">>> LOGIN - About to generate JWT token");
-            String token = jwtUtil.generateToken(client.getUsername(), roles);
+            String token = jwtUtil.generateToken(client.getUserID(), roles);
             System.out.println(">>> LOGIN - Token generated: " + (token != null ? "SUCCESS" : "FAILED"));
 
             HashMap<String, String> response = new HashMap<>();

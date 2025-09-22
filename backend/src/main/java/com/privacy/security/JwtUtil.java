@@ -19,10 +19,10 @@ public class JwtUtil {
 
     @Value("${jwt.expiration}")
     private long jwtExpirationMs;
-	public String generateToken(String username, List<String> roles)
+	public String generateToken(Integer userID, List<String> roles)
 	{
 		return Jwts.builder()
-				.setSubject(username)
+				.setSubject(userID.toString())
 				.claim("roles", roles)
 				.setIssuedAt(new Date())
 				.setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
@@ -30,7 +30,7 @@ public class JwtUtil {
 				.compact();
 	}
 	
-	public String extractUsername(String token) {
+	public String extractUserID(String token) {
 	    return Jwts.parserBuilder()
 	               .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
 	               .build()

@@ -1,8 +1,12 @@
 package com.privacy.DaoImpl;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -13,6 +17,8 @@ import org.springframework.stereotype.Repository;
 import com.privacy.Dao.ProfileDao;
 import com.privacy.Mapper.ClientMapper;
 import com.privacy.Mapper.LoginMapper;
+import com.privacy.Model.DTO.ConsentDTO;
+import com.privacy.Model.DTO.DataAuditLogDTO;
 import com.privacy.Model.Entity.Client;
 
 @Repository
@@ -22,10 +28,17 @@ public class ProfileDaoImpl implements ProfileDao{
 	private JdbcTemplate jdbcTemplate;
 	
 	@Autowired
+	private ModelMapper modelMapper;
+	
+	@Autowired
 	private ClientMapper clientMapper;
 	
 	@Autowired
 	private LoginMapper loginMapper;
+	
+	public ConsentDTO getConsent(Map<String, Object> spRow) {
+	    return modelMapper.map(spRow, ConsentDTO.class);
+	}
 	
 	@Override
 	public Client save(Client client) {
@@ -117,6 +130,123 @@ public class ProfileDaoImpl implements ProfileDao{
 	    } catch (Exception e) {
 	        return List.of("CLIENT");
 	    }
+	}
+
+
+	@Override
+	public boolean updateConsent(List<ConsentDTO> consentList, Integer userID) {
+		
+		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+	            .withProcedureName("sp_update_consent")
+	            .returningResultSet("result", (rs, rowNum) -> rs.getInt("NewConsentId"));
+		
+		ArrayList<Integer> indexArrayList = new ArrayList<Integer>();
+		
+		for (ConsentDTO c : consentList) {
+			c.setConsentScope();
+			SqlParameterSource params = new MapSqlParameterSource()
+					.addValue("UserID", userID)
+					.addValue("Purpose", c.getPurpose())
+					.addValue("Granted", c.getGranted())
+					.addValue("ConsentScope", c.getConsentScope());
+			
+			Map<String, Object> resMap = jdbcCall.execute(params);
+			List<Integer> newIds = (List<Integer>) resMap.get("result");
+			Integer newConsentId = newIds.get(0);
+			System.out.println("NewConsentId = " + newConsentId);
+	        indexArrayList.add(newConsentId);
+		}
+		
+		return (consentList.size() == indexArrayList.size());
+	}
+
+
+	@Override
+	public List<ConsentDTO> viewPreferences(Integer userID) {
+
+	    SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+	            .withProcedureName("sp_view_preferences");
+
+	    SqlParameterSource params = new MapSqlParameterSource()
+	            .addValue("UserID", userID)
+	            .addValue("InternalUID", null);
+
+	    Map<String, Object> res = jdbcCall.execute(params);
+
+	    List<Map<String, Object>> spResult = (List<Map<String, Object>>) res.get("#result-set-1");
+
+	    if (spResult == null || spResult.isEmpty()) {
+	        return Collections.emptyList();
+	    }
+
+	    List<ConsentDTO> dtos = spResult.stream()
+	            .map(row -> modelMapper.map(row, ConsentDTO.class))
+	            .collect(Collectors.toList());
+
+	    return dtos;
+	}
+
+
+
+	@Override
+	public List<DataAuditLogDTO> viewDataAccess(Integer userID) {
+		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+	            .withProcedureName("sp_view_data_access");
+
+	    SqlParameterSource params = new MapSqlParameterSource()
+	            .addValue("UserID", userID)
+	            .addValue("InternalUID", null);
+
+	    Map<String, Object> res = jdbcCall.execute(params);
+
+	    List<Map<String, Object>> spResult = (List<Map<String, Object>>) res.get("#result-set-1");
+
+	    if (spResult == null || spResult.isEmpty()) {
+	        return Collections.emptyList();
+	    }
+
+	    List<DataAuditLogDTO> dtos = spResult.stream()
+	            .map(row -> modelMapper.map(row, DataAuditLogDTO.class))
+	            .collect(Collectors.toList());
+
+	    return dtos;
+	}
+
+
+	@Override
+	public Client getProfile(Integer userID) {
+		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+	            .withProcedureName("sp_get_client");
+
+	    SqlParameterSource params = new MapSqlParameterSource()
+	            .addValue("UserID", userID)
+	            .addValue("InternalUID", null);
+
+	    Map<String, Object> res = jdbcCall.execute(params);
+
+	    List<Map<String, Object>> spResult = (List<Map<String, Object>>) res.get("#result-set-1");
+
+	    if (spResult == null || spResult.isEmpty()) {
+	        return null;
+	    }
+
+	    List<Client> dtos = spResult.stream()
+	            .map(row -> modelMapper.map(row, Client.class))
+	            .collect(Collectors.toList());
+
+	    return dtos.get(0);
+	}
+
+
+	@Override
+	public void requestErasure(Integer userID) {
+		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+	            .withProcedureName("sp_request_erasure");
+
+	    SqlParameterSource params = new MapSqlParameterSource()
+	            .addValue("UserID", userID);
+
+	    Map<String, Object> res = jdbcCall.execute(params);
 	}
 
 }

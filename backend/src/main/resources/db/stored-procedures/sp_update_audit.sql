@@ -2,18 +2,13 @@ CREATE OR ALTER PROCEDURE sp_update_audit
     @CustomerUserID     INT,
     @Action             VARCHAR(250),
     @Details            VARCHAR(MAX) = NULL,
-    @InternalUserID     INT = NULL,
-    @SessionID          VARCHAR(250) = NULL
+    @InternalUserID     INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    INSERT INTO dbo.AUDIT_LOG (CustomerUserID, Action, Details, InternalUserID, SessionID)
-    VALUES (@CustomerUserID, @Action, @Details, @InternalUserID, @SessionID);
-
-    PRINT 'Audited';
-
-    SELECT SCOPE_IDENTITY() AS NewAuditId;
+    INSERT INTO dbo.AUDIT_LOG (CustomerUserID, Action, Details, InternalUserID)
+    VALUES (@CustomerUserID, @Action, @Details, @InternalUserID);
 END;
 GO
 

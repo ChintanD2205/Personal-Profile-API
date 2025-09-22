@@ -7,3 +7,5 @@ BEGIN
 	SELECT UserID, FirstName, LastName, Username from CLIENTS WHERE Email=@Email AND Password=@Password;
 END;
 GO
+
+exec sp_login_client @Email='chintan222005@gmail.com', @Password='securePass123';
