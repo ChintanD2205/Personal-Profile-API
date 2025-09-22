@@ -52,7 +52,7 @@ public class ProfileDaoImpl implements ProfileDao{
 	public Client login(String email, String password) {
 	    System.out.println(">>> DAO LOGIN START - Email: " + email + " Password: " + password);
 	    
-	    String query = "SELECT DB_NAME() as Database, @@SERVERNAME as Server, HOST_NAME() as Host";
+	    String query = "SELECT DB_NAME() as CurrentDB, @@SERVERNAME as Server, HOST_NAME() as Host";
 	    Map<String, Object> info = jdbcTemplate.queryForMap(query);
 	    System.out.println("App connected to: " + info);
 	    
