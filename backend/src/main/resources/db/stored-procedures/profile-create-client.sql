@@ -32,5 +32,4 @@ GO
 --    @FirstName = 'Chintan',
 --    @LastName = 'Dodia',
 --    @Status = 1;
-
 SELECT * FROM CLIENTS;
