@@ -1,8 +1,10 @@
 package com.privacy.WS;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.privacy.BLL.EmployeeBLL;
+import com.privacy.Model.DTO.DataAuditLogDTO;
 import com.privacy.security.JwtUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,9 +48,16 @@ public class EmployeeWS {
 		return employeeBLL.getUserDataForAdmin(userID, employeeID);
 	}
 	
-//	@PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
-//	@GetMapping("/audit")
-//	public void viewAuditLogs() {}
+	@PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
+	@GetMapping({"/audit", "/audit/{id}"})
+	public ResponseEntity<List<DataAuditLogDTO>> viewAuditLogs(HttpServletRequest request, @PathVariable(required = false) Integer id){
+		String authHeader = request.getHeader("Authorization");
+		String token = authHeader.substring(7);
+		Integer employeeID = Integer.parseInt(jwtUtil.extractUserID(token));
+		
+		List<DataAuditLogDTO> audits= employeeBLL.getAuditLogs(id, employeeID);
+		return ResponseEntity.ok(audits);
+	}
 //	
 //	@PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
 //	@GetMapping("/privacy-requests")
