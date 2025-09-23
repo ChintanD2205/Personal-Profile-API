@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.privacy.BLL.EmployeeBLL;
 import com.privacy.Model.DTO.DataAuditLogDTO;
+import com.privacy.Model.DTO.ErasureRequestDTO;
 import com.privacy.security.JwtUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,11 +59,14 @@ public class EmployeeWS {
 		List<DataAuditLogDTO> audits= employeeBLL.getAuditLogs(id, employeeID);
 		return ResponseEntity.ok(audits);
 	}
-//	
-//	@PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
-//	@GetMapping("/privacy-requests")
-//	public void pendingErasureRequests() {}
-//	
+	
+	@PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
+	@GetMapping("/privacy-requests")
+	public ResponseEntity<List<ErasureRequestDTO>> pendingErasureRequests(){
+		List<ErasureRequestDTO> reqs = employeeBLL.getErasureRequests();
+		return ResponseEntity.ok(reqs);
+	}
+	
 //	@PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
 //	@DeleteMapping("/profile/{id}")
 //	public void hardDelete() {}

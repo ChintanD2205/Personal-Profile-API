@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.privacy.BLL.EmployeeBLL;
 import com.privacy.Dao.EmployeeDao;
 import com.privacy.Model.DTO.DataAuditLogDTO;
+import com.privacy.Model.DTO.ErasureRequestDTO;
 
 @Service
 public class EmployeeBLLImpl implements EmployeeBLL{
@@ -24,6 +25,11 @@ public class EmployeeBLLImpl implements EmployeeBLL{
 	@Override
 	public List<DataAuditLogDTO> getAuditLogs(Integer id, Integer employeeID) {
 		return employeeDao.getAuditLogs(id, employeeID);
+	}
+
+	@Override
+	public List<ErasureRequestDTO> getErasureRequests() {
+		return employeeDao.getErasureRequests();
 	}
 
 }

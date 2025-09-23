@@ -1,0 +1,9 @@
+CREATE OR ALTER PROCEDURE sp_get_erasure_requests
+AS
+BEGIN
+	SET NOCOUNT ON
+	SELECT * FROM PRIVACY_REQUESTS WHERE CompletedAt IS NULL;
+END;
+GO
+
+EXEC sp_get_erasure_requests;
