@@ -20,6 +20,8 @@ BEGIN
 
     PRINT 'Client inserted successfully.';
 
+	EXEC sp_update_audit @CustomerUserID = CAST(SCOPE_IDENTITY() AS INT), @Action = 'PROFILE_CREATED', @Details='User self-registration';
+
     SELECT CAST(SCOPE_IDENTITY() AS INT) AS NewUserId;
 
 END;
@@ -32,5 +34,4 @@ GO
 --    @FirstName = 'Chintan',
 --    @LastName = 'Dodia',
 --    @Status = 1;
-
 SELECT * FROM CLIENTS;

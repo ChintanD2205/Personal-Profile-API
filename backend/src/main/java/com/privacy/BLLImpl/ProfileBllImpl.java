@@ -1,11 +1,15 @@
 package com.privacy.BLLImpl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.privacy.BLL.ProfileBLL;
 import com.privacy.Dao.ProfileDao;
 import com.privacy.Model.DTO.ClientDTO;
+import com.privacy.Model.DTO.ConsentDTO;
+import com.privacy.Model.DTO.DataAuditLogDTO;
 import com.privacy.Model.Entity.Client;
 
 @Service
@@ -47,6 +51,35 @@ public class ProfileBllImpl implements ProfileBLL{
 	public ClientDTO getClientById(int id) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	@Override
+	public boolean updateConsent(List<ConsentDTO> consentList, Integer userID) {
+		return profileDao.updateConsent(consentList, userID);
+	}
+
+	@Override
+	public List<ConsentDTO> viewPreferences(Integer userID) {
+		return profileDao.viewPreferences(userID, null);
+		
+	}
+
+	@Override
+	public List<DataAuditLogDTO> viewDataAccess(Integer userID) {
+		return profileDao.viewDataAccess(userID, null);
+		
+	}
+
+	@Override
+	public Client getProfile(Integer userID) {
+		return profileDao.getProfile(userID, null);
+		
+	}
+
+	@Override
+	public void requestErasure(Integer userID) {
+		profileDao.requestErasure(userID);
+		
 	}
 	
 }
