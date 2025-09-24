@@ -15,6 +15,8 @@ import org.springframework.stereotype.Repository;
 
 import com.privacy.Dao.EmployeeDao;
 import com.privacy.Dao.ProfileDao;
+import com.privacy.Model.DTO.DataAuditLogDTO;
+import com.privacy.Model.DTO.ErasureRequestDTO;
 import com.privacy.Model.Entity.Employee;
 
 @Repository
@@ -59,6 +61,33 @@ public class EmployeeDaoImpl implements EmployeeDao{
 		result.put("Client", profileDao.getProfile(userID, employeeID));
 		result.put("Preferences", profileDao.viewPreferences(userID, employeeID));
 		return result;
+	}
+
+
+	@Override
+	public List<DataAuditLogDTO> getAuditLogs(Integer id, Integer employeeID) {
+		return profileDao.viewDataAccess(id, employeeID);
+	}
+
+
+	@Override
+	public List<ErasureRequestDTO> getErasureRequests() {
+		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+				.withProcedureName("sp_get_erasure_requests");
+		
+		Map<String, Object> resMap = jdbcCall.execute();
+		
+		List<Map<String, Object>> spResult = (List<Map<String, Object>>) resMap.get("#result-set-1");
+
+        if (spResult == null || spResult.isEmpty()) {
+	        return null;
+	    }
+
+	    List<ErasureRequestDTO> reqs = spResult.stream()
+	            .map(row -> modelMapper.map(row, ErasureRequestDTO.class))
+	            .collect(Collectors.toList());
+        
+        return reqs;
 	}
 
 }
