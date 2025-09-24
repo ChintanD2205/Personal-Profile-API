@@ -143,6 +143,7 @@ public class ProfileDaoImpl implements ProfileDao{
 		ArrayList<Integer> indexArrayList = new ArrayList<Integer>();
 		
 		for (ConsentDTO c : consentList) {
+			System.out.println(c.toString());
 			c.setConsentScope();
 			SqlParameterSource params = new MapSqlParameterSource()
 					.addValue("UserID", userID)

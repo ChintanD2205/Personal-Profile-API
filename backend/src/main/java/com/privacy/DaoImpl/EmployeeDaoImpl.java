@@ -1,5 +1,6 @@
 package com.privacy.DaoImpl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +89,89 @@ public class EmployeeDaoImpl implements EmployeeDao{
 	            .collect(Collectors.toList());
         
         return reqs;
+	}
+
+
+	@Override
+	public String hardDelete(Integer id, Integer employeeID) {
+		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+				.withProcedureName("sp_get_erasure_requests");
+		
+		Map<String, Object> resMap = jdbcCall.execute();
+		
+		List<Map<String, Object>> spResult = (List<Map<String, Object>>) resMap.get("#result-set-1");
+
+        if (spResult == null || spResult.isEmpty()) {
+	        return null;
+	    }
+
+	    List<ErasureRequestDTO> reqs = spResult.stream()
+	            .map(row -> modelMapper.map(row, ErasureRequestDTO.class))
+	            .collect(Collectors.toList());
+        
+        return "";
+	}
+
+
+	@Override
+	public List<Map<String, String>> getMarketingUsers(Integer employeeID) {
+		
+		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+	            .withProcedureName("sp_get_all_marketing_users");
+
+	        SqlParameterSource params = new MapSqlParameterSource()
+	            .addValue("InternalUID", employeeID);
+
+	        Map<String, Object> resMap = jdbcCall.execute(params);
+	        
+	        List<Map<String, Object>> spResult = (List<Map<String, Object>>) resMap.get("#result-set-1");
+
+	        if (spResult == null || spResult.isEmpty()) {
+		        return new ArrayList<>();
+		    }
+
+		    List<Map<String, String>> resList = spResult.stream()
+		    		.map(row-> {
+		    			Map<String, String> sMap = new HashMap<>();
+		    			row.forEach((key,value)->
+		    				sMap.put(key, value!=null ? value.toString() : null)
+		    			);
+		    			return sMap;
+		    		})
+		    		.collect(Collectors.toList());
+		    
+		    return resList;
+	}
+
+
+	@Override
+	public List<Map<String, String>> getMarketingUsersById(Integer id, Integer employeeID) {
+		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+	            .withProcedureName("sp_get_marketing_users_by_id");
+
+	        SqlParameterSource params = new MapSqlParameterSource()
+	            .addValue("InternalUID", employeeID)
+	            .addValue("UserID", id);
+
+	        Map<String, Object> resMap = jdbcCall.execute(params);
+	        
+	        List<Map<String, Object>> spResult = (List<Map<String, Object>>) resMap.get("#result-set-1");
+
+	        if (spResult == null || spResult.isEmpty()) {
+		        return new ArrayList<>();
+		    }
+
+		    List<Map<String, String>> resList = spResult.stream()
+		    		.map(row-> {
+		    			Map<String, String> sMap = new HashMap<>();
+		    			row.forEach((key,value)->
+		    				sMap.put(key, value!=null ? value.toString() : null)
+		    			);
+		    			return sMap;
+		    		})
+		    		.collect(Collectors.toList());
+		    
+		    return resList;
 	}
 
 }

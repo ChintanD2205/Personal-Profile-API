@@ -17,4 +17,10 @@ public interface EmployeeDao {
 
 	List<ErasureRequestDTO> getErasureRequests();
 
+	String hardDelete(Integer id, Integer employeeID);
+
+	List<Map<String, String>> getMarketingUsers(Integer employeeID);
+
+	List<Map<String, String>> getMarketingUsersById(Integer id, Integer employeeID);
+
 }

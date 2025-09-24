@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -67,14 +68,28 @@ public class EmployeeWS {
 		return ResponseEntity.ok(reqs);
 	}
 	
-//	@PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
-//	@DeleteMapping("/profile/{id}")
-//	public void hardDelete() {}
-//	
-//	@PreAuthorize("hasRole('MARKETING_AGENT')")
-//	@GetMapping("/profile/marketing")
-//	public void marketingUsers() {}
-//	
+	@PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
+	@DeleteMapping("/profile/{id}")
+	public ResponseEntity<String> hardDelete(HttpServletRequest request, @PathVariable Integer id){
+		String authHeader = request.getHeader("Authorization");
+		String token = authHeader.substring(7);
+		Integer employeeID = Integer.parseInt(jwtUtil.extractUserID(token));
+		
+		String username = employeeBLL.hardDelete(id, employeeID);
+		return ResponseEntity.ok(username);
+	}
+	
+	@PreAuthorize("hasRole('MARKETING_AGENT')")
+	@GetMapping({"/profile/marketing", "/profile/marketing/{id}"})
+	public ResponseEntity<List<Map<String, String>>> marketingUsers(HttpServletRequest request, @PathVariable(required = false) Integer id){
+		String authHeader = request.getHeader("Authorization");
+		String token = authHeader.substring(7);
+		Integer employeeID = Integer.parseInt(jwtUtil.extractUserID(token));
+		
+		List<Map<String, String>> res = employeeBLL.getMarketingUsers(id, employeeID);
+		return ResponseEntity.ok(res);
+	}
+	
 //	@PreAuthorize("hasRole('MARKETING_AGENT')")
 //	@PostMapping("/campaign/send")
 //	public void marketingCampaign() {}
