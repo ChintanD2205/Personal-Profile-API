@@ -14,4 +14,8 @@ public interface EmployeeBLL {
 
 	List<ErasureRequestDTO> getErasureRequests();
 
+	String hardDelete(Integer id, Integer employeeID);
+
+	List<Map<String, String>> getMarketingUsers(Integer id, Integer employeeID);
+
 }

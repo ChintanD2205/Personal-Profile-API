@@ -32,4 +32,20 @@ public class EmployeeBLLImpl implements EmployeeBLL{
 		return employeeDao.getErasureRequests();
 	}
 
+	@Override
+	public String hardDelete(Integer id, Integer employeeID) {
+		return employeeDao.hardDelete(id, employeeID);
+	}
+
+	@Override
+	public List<Map<String, String>> getMarketingUsers(Integer id, Integer employeeID) {
+		if (id!= null)
+		{
+			return employeeDao.getMarketingUsersById(id, employeeID);
+		}
+		else {
+			return employeeDao.getMarketingUsers(employeeID);
+		}
+	}
+
 }
