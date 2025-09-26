@@ -3,6 +3,10 @@ CREATE OR ALTER PROCEDURE sp_request_erasure
 AS
 BEGIN
 	SET NOCOUNT ON
+
+	UPDATE CLIENTS
+	SET Status=0 WHERE UserID=@UserID;
+
 	INSERT INTO PRIVACY_REQUESTS (UserID, RequestType, Status)
 	VALUES (@UserID, 'ACCOUNT_ERASURE', 'Incomplete');
 END;

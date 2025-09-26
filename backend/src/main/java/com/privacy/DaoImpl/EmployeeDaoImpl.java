@@ -16,8 +16,10 @@ import org.springframework.stereotype.Repository;
 
 import com.privacy.Dao.EmployeeDao;
 import com.privacy.Dao.ProfileDao;
+import com.privacy.Model.DTO.AnalysisDTO;
 import com.privacy.Model.DTO.DataAuditLogDTO;
 import com.privacy.Model.DTO.ErasureRequestDTO;
+import com.privacy.Model.Entity.Client;
 import com.privacy.Model.Entity.Employee;
 
 @Repository
@@ -93,11 +95,16 @@ public class EmployeeDaoImpl implements EmployeeDao{
 
 
 	@Override
-	public String hardDelete(Integer id, Integer employeeID) {
+	public List<Map<String, String>> hardDelete(Integer id, Integer employeeID, String notes) {
 		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
-				.withProcedureName("sp_get_erasure_requests");
+				.withProcedureName("sp_hard_delete");
 		
-		Map<String, Object> resMap = jdbcCall.execute();
+		SqlParameterSource params = new MapSqlParameterSource()
+				.addValue("UserID", id)
+	            .addValue("InternalUserID", employeeID)
+	            .addValue("Notes", notes);
+
+	    Map<String, Object> resMap = jdbcCall.execute(params);
 		
 		List<Map<String, Object>> spResult = (List<Map<String, Object>>) resMap.get("#result-set-1");
 
@@ -105,11 +112,17 @@ public class EmployeeDaoImpl implements EmployeeDao{
 	        return null;
 	    }
 
-	    List<ErasureRequestDTO> reqs = spResult.stream()
-	            .map(row -> modelMapper.map(row, ErasureRequestDTO.class))
-	            .collect(Collectors.toList());
-        
-        return "";
+        List<Map<String, String>> resList = spResult.stream()
+	    		.map(row-> {
+	    			Map<String, String> sMap = new HashMap<>();
+	    			row.forEach((key,value)->
+	    				sMap.put(key, value!=null ? value.toString() : null)
+	    			);
+	    			return sMap;
+	    		})
+	    		.collect(Collectors.toList());
+	    
+	    return resList;
 	}
 
 
@@ -172,6 +185,75 @@ public class EmployeeDaoImpl implements EmployeeDao{
 		    		.collect(Collectors.toList());
 		    
 		    return resList;
+	}
+
+
+	@Override
+	public AnalysisDTO getAnalytics(Integer employeeID) {
+		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+				.withProcedureName("sp_get_analytics");
+		
+		SqlParameterSource params = new MapSqlParameterSource()
+				.addValue("InternalUID", employeeID);
+		
+		Map<String, Object> resMap = jdbcCall.execute(params);
+		
+		List<Map<String, Object>> spResult = (List<Map<String, Object>>) resMap.get("#result-set-1");
+
+        if (spResult == null || spResult.isEmpty()) {
+	        return null;
+	    }
+
+	    AnalysisDTO reqs = modelMapper.map(spResult.get(0), AnalysisDTO.class);
+        
+        return reqs;
+	}
+
+
+	@Override
+	public Boolean updateUserProfile(Integer id, Client client, Integer employeeID) {
+		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+				.withProcedureName("sp_update_user_profile");
+		
+		SqlParameterSource params = new MapSqlParameterSource()
+				.addValue("InternalUID", employeeID)
+				.addValue("UserID", id)
+				.addValue("Username", client.getUsername())
+				.addValue("FirstName", client.getFirstName())
+				.addValue("LastName", client.getLastName());
+		
+		Map<String, Object> resMap = jdbcCall.execute(params);
+		
+		List<Map<String, Object>> spResult = (List<Map<String, Object>>) resMap.get("#result-set-1");
+
+        if (spResult == null || spResult.isEmpty()) {
+	        return false;
+	    }
+        return true;
+	}
+
+
+	@Override
+	public Client restoreSoftDeletedProfile(Integer id, Integer employeeID) {
+		
+		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+				.withProcedureName("sp_restore_soft_deleted_profile");
+		
+		SqlParameterSource params = new MapSqlParameterSource()
+				.addValue("InternalUID", employeeID)
+				.addValue("UserID", id);
+		
+		Map<String, Object> resMap = jdbcCall.execute(params);
+		
+		List<Map<String, Object>> spResult = (List<Map<String, Object>>) resMap.get("#result-set-1");
+
+        if (spResult == null || spResult.isEmpty()) {
+	        return null;
+	    }
+
+	    Client reqs = modelMapper.map(spResult.get(0), Client.class);
+        
+        return reqs;
 	}
 
 }
