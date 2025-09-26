@@ -5,5 +5,3 @@ BEGIN
 	SELECT * FROM PRIVACY_REQUESTS WHERE CompletedAt IS NULL;
 END;
 GO
-
-EXEC sp_get_erasure_requests;

@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 
 import com.privacy.BLL.EmployeeBLL;
 import com.privacy.Dao.EmployeeDao;
+import com.privacy.Model.DTO.AnalysisDTO;
 import com.privacy.Model.DTO.DataAuditLogDTO;
 import com.privacy.Model.DTO.ErasureRequestDTO;
+import com.privacy.Model.Entity.Client;
 
 @Service
 public class EmployeeBLLImpl implements EmployeeBLL{
@@ -33,8 +35,8 @@ public class EmployeeBLLImpl implements EmployeeBLL{
 	}
 
 	@Override
-	public String hardDelete(Integer id, Integer employeeID) {
-		return employeeDao.hardDelete(id, employeeID);
+	public List<Map<String, String>> hardDelete(Integer id, Integer employeeID, String notes) {
+		return employeeDao.hardDelete(id, employeeID, notes);
 	}
 
 	@Override
@@ -46,6 +48,21 @@ public class EmployeeBLLImpl implements EmployeeBLL{
 		else {
 			return employeeDao.getMarketingUsers(employeeID);
 		}
+	}
+
+	@Override
+	public AnalysisDTO getAnalytics(Integer employeeID) {
+		return employeeDao.getAnalytics(employeeID);
+	}
+
+	@Override
+	public Boolean updateUserProfile(Integer id, Client client, Integer employeeID) {
+		return employeeDao.updateUserProfile(id, client, employeeID);
+	}
+
+	@Override
+	public Client restoreSoftDeletedProfile(Integer id, Integer employeeID) {
+		return employeeDao.restoreSoftDeletedProfile(id, employeeID);
 	}
 
 }
