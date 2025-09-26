@@ -65,4 +65,14 @@ public class EmployeeBLLImpl implements EmployeeBLL{
 		return employeeDao.restoreSoftDeletedProfile(id, employeeID);
 	}
 
+	@Override
+	public void createTopicInDB(String topicName, String arnTopic, String purpose, Integer employeeID) {
+		employeeDao.createTopicInDB(topicName, arnTopic, purpose, employeeID);
+	}
+
+	@Override
+	public String addTopicMessageInDB(String purpose, String subject, String message, Integer employeeID) {	
+		return employeeDao.addTopicMessageInDB(purpose, subject, message, employeeID);
+	}
+
 }

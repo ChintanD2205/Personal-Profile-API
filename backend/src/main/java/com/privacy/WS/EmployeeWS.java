@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.privacy.BLL.EmployeeBLL;
+import com.privacy.BLLImpl.SNSService;
 import com.privacy.Model.DTO.AnalysisDTO;
 import com.privacy.Model.DTO.DataAuditLogDTO;
 import com.privacy.Model.DTO.ErasureRequestDTO;
@@ -34,6 +35,9 @@ public class EmployeeWS {
 	
 	@Autowired
 	private JwtUtil jwtUtil;
+	
+	@Autowired
+	private SNSService snsService;
 	
 	@GetMapping("/")
 	public String returnHello(HttpServletRequest request)
@@ -97,14 +101,16 @@ public class EmployeeWS {
 	
 	@PreAuthorize("hasRole('MARKETING_AGENT')")
 	@PostMapping("/campaign/send")
-	public ResponseEntity<List<Map<String, String>>> marketingCampaign(HttpServletRequest request){
+	public ResponseEntity<String> marketingCampaign(HttpServletRequest request, @RequestBody Map<String, String> req){
 		String authHeader = request.getHeader("Authorization");
 		String token = authHeader.substring(7);
 		Integer employeeID = Integer.parseInt(jwtUtil.extractUserID(token));
 		
-		List<Map<String, String>> res = employeeBLL.getMarketingUsers(null, employeeID);
-		//Implement Method to send email using Amazon SNS
-		return ResponseEntity.ok(res);
+		String topicArn = employeeBLL.addTopicMessageInDB(req.get("purpose"), req.get("subject"), req.get("message"), employeeID);
+		snsService.publishMessage(topicArn, req.get("subject"), req.get("message"));
+		
+		
+		return ResponseEntity.ok("Message sent!");
 	}
 	
 	@PreAuthorize("hasRole('ANALYTICS_AGENT')")
@@ -145,4 +151,17 @@ public class EmployeeWS {
 		}
 		
 	}
+	
+	@PreAuthorize("!hasRole('CLIENT')")
+	@PostMapping("/sns/create-topic")
+    public String createTopic(@RequestBody Map<String, String> req, HttpServletRequest request) {
+		
+		String authHeader = request.getHeader("Authorization");
+		String token = authHeader.substring(7);
+		Integer employeeID = Integer.parseInt(jwtUtil.extractUserID(token));
+		
+        String arnTopic = snsService.createTopic(req.get("topicName"));
+        employeeBLL.createTopicInDB(req.get("topicName"), arnTopic, req.get("purpose"), employeeID);
+        return arnTopic;
+    }
 }

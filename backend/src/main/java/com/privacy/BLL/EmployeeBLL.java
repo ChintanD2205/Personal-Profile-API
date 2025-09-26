@@ -26,4 +26,8 @@ public interface EmployeeBLL {
 
 	Client restoreSoftDeletedProfile(Integer id, Integer employeeID);
 
+	void createTopicInDB(String string, String arnTopic, String string2, Integer employeeID);
+
+	String addTopicMessageInDB(String string, String string2, String string3, Integer employeeID);
+
 }
