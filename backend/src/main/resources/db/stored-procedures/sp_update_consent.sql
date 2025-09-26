@@ -2,7 +2,10 @@ CREATE OR ALTER PROCEDURE sp_update_consent
     @UserID         INT,
     @Purpose        VARCHAR(250),
     @Granted        BIT,
-    @ConsentScope   VARCHAR(MAX)
+    @ConsentScope   VARCHAR(MAX),
+    @TopicARN       VARCHAR(250) OUTPUT,
+    @UserEmail      VARCHAR(250) OUTPUT,
+    @SubscriptionID VARCHAR(MAX) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -12,6 +15,17 @@ BEGIN
     DECLARE @Action VARCHAR(100);
     DECLARE @Details VARCHAR(MAX);
 
+    SELECT @TopicARN = topicARN
+    FROM TOPIC
+    WHERE Purpose = @Purpose;
+
+    SELECT @UserEmail=Email
+    FROM CLIENTS
+    WHERE UserID=@UserID;
+
+    SELECT @SubscriptionID=subscriptionId
+    FROM ARN_SUBSCRIPTIONS
+    WHERE userID=@UserID and purpose=@Purpose;
 
     SELECT 
         @ExistingConsentID = ConsentID,

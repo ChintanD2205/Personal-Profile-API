@@ -31,4 +31,8 @@ public interface EmployeeDao {
 
 	Client restoreSoftDeletedProfile(Integer id, Integer employeeID);
 
+	void createTopicInDB(String topicName, String arnTopic, String purpose, Integer employeeID);
+
+	String addTopicMessageInDB(String purpose, String subject, String message, Integer employeeID);
+
 }

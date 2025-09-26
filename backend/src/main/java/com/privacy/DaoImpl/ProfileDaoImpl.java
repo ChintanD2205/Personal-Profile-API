@@ -1,5 +1,6 @@
 package com.privacy.DaoImpl;
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,11 +10,14 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SqlOutParameter;
+import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
+import com.privacy.BLLImpl.SNSService;
 import com.privacy.Dao.ProfileDao;
 import com.privacy.Mapper.ClientMapper;
 import com.privacy.Mapper.LoginMapper;
@@ -35,6 +39,9 @@ public class ProfileDaoImpl implements ProfileDao{
 	
 	@Autowired
 	private LoginMapper loginMapper;
+	
+	@Autowired
+	private SNSService snsService;
 	
 	public ConsentDTO getConsent(Map<String, Object> spRow) {
 	    return modelMapper.map(spRow, ConsentDTO.class);
@@ -135,31 +142,79 @@ public class ProfileDaoImpl implements ProfileDao{
 
 	@Override
 	public boolean updateConsent(List<ConsentDTO> consentList, Integer userID) {
-		
-		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
-	            .withProcedureName("sp_update_consent")
-	            .returningResultSet("result", (rs, rowNum) -> rs.getInt("NewConsentId"));
-		
-		ArrayList<Integer> indexArrayList = new ArrayList<Integer>();
-		
-		for (ConsentDTO c : consentList) {
-			System.out.println(c.toString());
-			c.setConsentScope();
-			SqlParameterSource params = new MapSqlParameterSource()
-					.addValue("UserID", userID)
-					.addValue("Purpose", c.getPurpose())
-					.addValue("Granted", c.getGranted())
-					.addValue("ConsentScope", c.getConsentScope());
-			
-			Map<String, Object> resMap = jdbcCall.execute(params);
-			List<Integer> newIds = (List<Integer>) resMap.get("result");
-			Integer newConsentId = newIds.get(0);
-			System.out.println("NewConsentId = " + newConsentId);
-	        indexArrayList.add(newConsentId);
-		}
-		
-		return (consentList.size() == indexArrayList.size());
+	
+	    ArrayList<Integer> newConsentIds = new ArrayList<>();
+	
+	    for (ConsentDTO c : consentList) {
+	        System.out.println(c.toString());
+	        c.setConsentScope();
+	
+	        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+	                .withProcedureName("sp_update_consent")
+	                .declareParameters(
+	                        new SqlParameter("UserID", Types.INTEGER),
+	                        new SqlParameter("Purpose", Types.VARCHAR),
+	                        new SqlParameter("Granted", Types.BIT),
+	                        new SqlParameter("ConsentScope", Types.VARCHAR),
+	                        new SqlOutParameter("TopicARN", Types.VARCHAR),
+	                        new SqlOutParameter("UserEmail", Types.VARCHAR),
+	                        new SqlOutParameter("SubscriptionID", Types.VARCHAR)
+	                )
+	                .returningResultSet("result", (rs, rowNum) -> rs.getInt("NewConsentId"));
+	
+	        SqlParameterSource params = new MapSqlParameterSource()
+	                .addValue("UserID", userID)
+	                .addValue("Purpose", c.getPurpose())
+	                .addValue("Granted", c.getGranted())
+	                .addValue("ConsentScope", c.getConsentScope());
+	
+	        Map<String, Object> resMap = jdbcCall.execute(params);
+	        
+	        List<Integer> resultIds = (List<Integer>) resMap.get("result");
+	        
+	        Integer newConsentId = resultIds.get(0);
+	        
+	        newConsentIds.add(newConsentId);
+	
+	        String topicArn = (String) resMap.get("TopicARN");
+	        String email = ((String) resMap.get("UserEmail")).trim();
+	        String subscriptionID = (String) resMap.get("SubscriptionID");
+	
+	        if (topicArn != null && !topicArn.isEmpty()) 
+	        {
+	            if (c.getGranted() == 1 && (subscriptionID == null || subscriptionID.isEmpty())) 
+	            {
+	                String sID = snsService.subscribeEmail(topicArn, email);
+	                
+	                SimpleJdbcCall updateSubCall = new SimpleJdbcCall(jdbcTemplate)
+	                        .withProcedureName("sp_update_arn_subscriptions");
+	                
+	                updateSubCall.execute(new MapSqlParameterSource()
+	                        .addValue("UserId", userID)
+	                        .addValue("Purpose", c.getPurpose())
+	                        .addValue("SubscriptionID",sID)
+	                );
+	            } else if (c.getGranted() == 0 && subscriptionID != null && !subscriptionID.isEmpty()) {
+	            	
+	                snsService.unsubscribe(subscriptionID);
+	                
+	                SimpleJdbcCall updateSubCall = new SimpleJdbcCall(jdbcTemplate)
+	                        .withProcedureName("sp_update_arn_subscriptions");
+	                
+	                updateSubCall.execute(new MapSqlParameterSource()
+	                        .addValue("UserId", userID)
+	                        .addValue("Purpose", c.getPurpose())
+	                        .addValue("SubscriptionID", null)
+	                );
+	            }
+	        }
+	
+	        System.out.println("NewConsentId = " + newConsentId);
+	    }
+	
+	    return consentList.size() == newConsentIds.size();
 	}
+
 
 
 	@Override

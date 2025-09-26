@@ -1,5 +1,6 @@
 package com.privacy.DaoImpl;
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +10,8 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SqlOutParameter;
+import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
@@ -254,6 +257,48 @@ public class EmployeeDaoImpl implements EmployeeDao{
 	    Client reqs = modelMapper.map(spResult.get(0), Client.class);
         
         return reqs;
+	}
+
+
+	@Override
+	public void createTopicInDB(String topicName, String arnTopic, String purpose, Integer employeeID){
+		
+		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+				.withProcedureName("sp_create_topic");
+		
+		SqlParameterSource params = new MapSqlParameterSource()
+				.addValue("topicName", topicName)
+				.addValue("arnTopic", arnTopic)
+				.addValue("purpose", purpose)
+				.addValue("createdBy", employeeID);
+		
+		Map<String, Object> resMap = jdbcCall.execute(params);
+	}
+
+
+	@Override
+	public String addTopicMessageInDB(String purpose, String subject, String message, Integer employeeID) {
+
+		SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+				.withProcedureName("sp_add_topic_message")
+				.declareParameters(
+	                    new SqlParameter("subject", Types.VARCHAR),
+	                    new SqlParameter("purpose", Types.VARCHAR),
+	                    new SqlParameter("message", Types.VARCHAR),
+	                    new SqlParameter("createdBy", Types.INTEGER),
+	                    new SqlOutParameter("TopicARN", Types.VARCHAR)
+	            );
+		
+		SqlParameterSource params = new MapSqlParameterSource()
+				.addValue("subject", subject)
+				.addValue("purpose", purpose)
+				.addValue("message", message)
+				.addValue("createdBy", employeeID);
+		
+		Map<String, Object> resMap = jdbcCall.execute(params);
+		String topicarn = (String) resMap.get("TopicARN");
+		System.out.println(topicarn);
+		return topicarn;
 	}
 
 }
