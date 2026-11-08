@@ -99,3 +99,24 @@ GO
 
 
 SELECT * FROM CONSENT_RECORDS;
+
+DECLARE 
+    @TopicARN VARCHAR(250),
+    @UserEmail VARCHAR(250),
+    @SubscriptionID VARCHAR(MAX),
+    @NewConsentId INT;
+
+EXEC sp_update_consent
+    @UserID = 1,
+    @Purpose = 'Marketing',
+    @Granted = NULL,           -- do not change
+    @ConsentScope = NULL,      -- do not change
+    @TopicARN = @TopicARN OUTPUT,
+    @UserEmail = @UserEmail OUTPUT,
+    @SubscriptionID = @SubscriptionID OUTPUT;
+
+SELECT 
+    @TopicARN AS TopicARN,
+    @UserEmail AS UserEmail,
+    @SubscriptionID AS SubscriptionID,
+    @NewConsentId AS NewConsentId;

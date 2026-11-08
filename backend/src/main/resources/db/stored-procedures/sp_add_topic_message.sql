@@ -28,3 +28,5 @@ BEGIN
 		@InternalUserID = @createdBy;
 END;
 GO
+
+SELECT * FROM TOPIC WHERE purpose='MARKETING_EMAILS';
